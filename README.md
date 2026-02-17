@@ -1,6 +1,6 @@
 # NFL Wide Receiver Efficiency Visualizer (2024)
 
-[**🚀 Launch Live Dashboard**](https://jakealles-cloud.github.io/2024_nfl_wr_efficieny/)  
+[**🚀 Launch Live Dashboard**](https://jaa225.github.io/2024_nfl_wr_efficiency/)  
 
 ## Project Overview
 This project provides a granular analysis of NFL Wide Receiver performance during the 2024 season. Unlike standard box scores, this tool breaks down efficiency based on **field zones** (Short, Mid, Deep) and **alignment** (Left, Middle, Right).
