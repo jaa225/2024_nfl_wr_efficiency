@@ -1,0 +1,22 @@
+# System Files
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.env
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Other
+node_modules/
+log/
+tmp/
+analyze_scores.py
+Data/

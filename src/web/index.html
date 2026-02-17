@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL WR Efficiency Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>NFL WR Efficiency Visualizer <span class="season">2024</span></h1>
+            <p>Analyze Wide Receiver performance by field zone.</p>
+        </header>
+
+        <section id="controls" class="controls-panel">
+            <div class="control-group">
+                <label for="team-select">Team</label>
+                <select id="team-select">
+                    <option value="all">All Teams</option>
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="player-select">Player</label>
+                <select id="player-select" disabled>
+                    <option value="">Select a Player</option>
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+        </section>
+
+        <main id="dashboard" class="dashboard hidden">
+            <div class="player-info">
+                <h2 id="player-name">Player Name</h2>
+                <div class="badge" id="player-team">TEAM</div>
+                <div class="total-stats">
+                    <div class="stat-box">
+                        <span class="label">Targets</span>
+                        <span class="value" id="total-targets">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Receptions</span>
+                        <span class="value" id="total-receptions">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Yards</span>
+                        <span class="value" id="total-yards">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">TDs</span>
+                        <span class="value" id="total-tds">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">Catch %</span>
+                        <span class="value" id="total-catch-rate">0%</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="label">YPC</span>
+                        <span class="value" id="total-ypc">0.0</span>
+                    </div>
+                </div>
+
+                <div class="routes-container">
+                    <h3>Recommended Routes</h3>
+                    <ul id="recommended-routes" class="routes-list">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <div class="visualization-container">
+                <div class="legend-panel">
+                    <h3>Zone Efficiency Score</h3>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <span class="color-box heatmap-high"></span>
+                            <span>High (&ge; 0.90)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box heatmap-med"></span>
+                            <span>Med (0.65 - 0.89)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-box heatmap-low"></span>
+                            <span>Low (< 0.65)</span>
+                        </div>
+                    </div>
+                    <p class="legend-note">
+                        <strong>Note:</strong> More vivid colors indicate higher scores within the tier.
+                    </p>
+                    <p class="legend-note">
+                        <strong>Zones:</strong> Short (0-9 yds), Mid (10-19 yds), Deep (20+ yds)
+                    </p>
+                    <p class="legend-note">
+                        <strong>Score Range:</strong> 0.0 - 1.15 (Max)
+                    </p>
+                </div>
+
+                <div class="field-container">
+                    <div class="field-grid">
+                        <!-- Zones will be generated here or hardcoded -->
+                        <!-- Row 1: Deep -->
+                        <div class="zone deep left" data-depth="Deep" data-dir="Left"><span class="zone-label">Deep
+                                Left</span></div>
+                        <div class="zone deep middle" data-depth="Deep" data-dir="Middle"><span class="zone-label">Deep
+                                Middle</span></div>
+                        <div class="zone deep right" data-depth="Deep" data-dir="Right"><span class="zone-label">Deep
+                                Right</span></div>
+
+                        <!-- Row 2: Mid -->
+                        <div class="zone mid left" data-depth="Mid" data-dir="Left"><span class="zone-label">Mid
+                                Left</span></div>
+                        <div class="zone mid middle" data-depth="Mid" data-dir="Middle"><span class="zone-label">Mid
+                                Middle</span></div>
+                        <div class="zone mid right" data-depth="Mid" data-dir="Right"><span class="zone-label">Mid
+                                Right</span></div>
+
+                        <!-- Row 3: Short -->
+                        <div class="zone short left" data-depth="Short" data-dir="Left"><span class="zone-label">Short
+                                Left</span></div>
+                        <div class="zone short middle" data-depth="Short" data-dir="Middle"><span
+                                class="zone-label">Short Middle</span></div>
+                        <div class="zone short right" data-depth="Short" data-dir="Right"><span class="zone-label">Short
+                                Right</span></div>
+                    </div>
+                    <div class="legend">
+                        <span>Metrics shown: Rec / Tgt | Yards | TDs</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="loading" class="loading-message">Loading Data...</div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
