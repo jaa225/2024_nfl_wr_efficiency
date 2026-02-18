@@ -52,4 +52,55 @@ Score = (CatchRate * 0.3) + (CappedYPT * 0.4) + (TD% * 0.2) + (TargetShare * 0.1
 *   **League Comparison**: Clicking on any zone opens a detailed popup comparing the player's Yards Per Target (YPT) to the league average for that specific zone.
 
 ---
+
+## 🛠️ Installation & Local Setup
+
+To run this project locally on your machine:
+
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/jaa225/2024_nfl_wr_efficiency.git
+    cd 2024_nfl_wr_efficiency
+    ```
+
+2.  **Set Up Python Environment (Optional but Recommended)**
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install pandas numpy nfl_data_py
+    ```
+
+3.  **Run the Local Server**
+    ```bash
+    python3 -m http.server 8000 --directory "src/web"
+    ```
+    Then open `http://localhost:8000` in your browser.
+
+## 📂 Project Structure
+
+*   `Data/`: Contains raw parquet files and processed CSVs/JSONs.
+*   `src/`:
+    *   `data_processing.py`: Python ETL script that fetches NLF data, aggregates stats, and calculates efficiency scores.
+    *   `web/`: The frontend application.
+        *   `index.html`: Main dashboard structure.
+        *   `app.js`: Logic for interactivity, filtering, and dynamic rendering.
+        *   `styles.css`: Custom CSS for the heatmap and UI.
+        *   `wr_data.json`: The processed data consumed by the frontend.
+
+## 🚀 Future Improvements (Roadmap)
+
+*   **Defensive Metrics**: Add "Points Allowed" heatmap for the opposing Cornerbacks.
+*   **Historical Comparison**: Compare 2024 efficiency vs 2023 for individual players.
+*   **Weekly Filtering**: Visualize performance for specific weeks (e.g., Week 1-5 vs Week 6-10).
+*   **Mobile Optimization**: Enhance the field view for smaller screens.
+
+## 👨‍💻 Author & Contact
+
+**Jake Alles** - *MSBA Candidate, Class of 2026*
+
+*   [LinkedIn](https://www.linkedin.com/in/jake-alles/)
+*   [GitHub](https://github.com/jaa225)
+*   Email: [Insert Email Here]
+
+---
 *Created for MSBA Spring 2026 Project.*
