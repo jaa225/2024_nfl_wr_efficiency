@@ -136,6 +136,36 @@
         </main>
 
         <div id="loading" class="loading-message">Loading Data...</div>
+
+        <!-- Zone Details Modal -->
+        <div id="zone-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3 id="modal-title">Zone Details</h3>
+                <h4 id="modal-subtitle"
+                    style="margin-top: -1rem; margin-bottom: 1.5rem; color: var(--text-secondary); font-weight: normal; font-size: 0.9rem;">
+                    -</h4>
+                <div class="modal-stats">
+                    <div class="modal-row">
+                        <span class="label">Player YPT:</span>
+                        <span class="value" id="modal-player-ypt">-</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="label">League Avg YPT:</span>
+                        <span class="value" id="modal-league-ypt">-</span>
+                    </div>
+                    <div class="modal-row">
+                        <span class="label">Diff vs League:</span>
+                        <span class="value" id="modal-pct">-</span>
+                    </div>
+                    <div class="modal-row"
+                        style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                        <span class="label">Best Receiver:</span>
+                        <span class="value" id="modal-team-best" style="font-size: 0.9rem;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>

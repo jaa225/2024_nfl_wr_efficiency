@@ -49,6 +49,7 @@ Score = (CatchRate * 0.3) + (CappedYPT * 0.4) + (TD% * 0.2) + (TargetShare * 0.1
     *   **Yellow**: Above Average (Score 0.65 - 0.89).
     *   **Red**: Below Average / Low Volume.
 *   **Route Recommendations**: The app suggests optimal routes (e.g., "Deep Left") based on where the receiver scores highest.
+*   **League Comparison**: Clicking on any zone opens a detailed popup comparing the player's Yards Per Target (YPT) to the league average for that specific zone.
 
 ---
 *Created for MSBA Spring 2026 Project.*

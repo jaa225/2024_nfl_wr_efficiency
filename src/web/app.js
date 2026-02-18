@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loading = document.getElementById('loading');
 
     let allPlayers = []; // Full list of player objects
+    let leagueAverages = {}; // League averages per zone
 
     // Load Data
     fetch('wr_data.json')
@@ -13,7 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            allPlayers = data;
+            allPlayers = data.players;
+            leagueAverages = data.league_averages;
             initializeControls();
             loading.style.display = 'none';
         })
@@ -38,6 +40,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Event Listeners
         teamSelect.addEventListener('change', handleTeamChange);
         playerSelect.addEventListener('change', handlePlayerChange);
+
+        // Modal Close Listener
+        document.querySelector('.close-modal').addEventListener('click', () => {
+            document.getElementById('zone-modal').classList.remove('show');
+        });
+
+        window.onclick = function (event) {
+            const modal = document.getElementById('zone-modal');
+            if (event.target == modal) {
+                modal.classList.remove('show');
+            }
+        }
     }
 
     function handleTeamChange() {
@@ -160,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset Zones
         zones.forEach(zone => {
             zone.style.backgroundColor = ''; // Reset heatmap
+            zone.onclick = null; // Clear old listeners
             const stats = zone.querySelector('.zone-stats');
             if (stats) stats.remove();
         });
@@ -188,8 +203,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 zoneEl.appendChild(statsDiv);
 
                 // Heatmap Logic: Weighted Composite Score
-                // Score = (Catch Rate * 0.4) + (YPT/10 * 0.3) + (TD Per Target * 0.1) + (Rec Share * 0.2)
-
                 const catchRate = z.targets > 0 ? (z.receptions / z.targets) : 0; // 0-1 scale
                 const zoneYPT = z.targets > 0 ? (z.yards / z.targets) : 0;
                 const tdPerTarget = z.targets > 0 ? (z.tds / z.targets) : 0;
@@ -230,6 +243,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 zoneEl.style.backgroundColor = colorValue;
 
+                // Add Click Listener for Modal
+                zoneEl.onclick = () => showZoneDetails(z, zoneYPT, player);
+
                 // Store for recommendations
                 zonePerformances.push({
                     zone: `${z.depth} ${z.direction}`,
@@ -244,6 +260,121 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Generate Recommended Routes
         recommendRoutes(zonePerformances);
+    }
+
+    function showZoneDetails(zoneData, playerYptVal, player) {
+        const modal = document.getElementById('zone-modal');
+        const key = `${zoneData.depth}-${zoneData.direction}`;
+        const leagueAvg = leagueAverages[key];
+
+        // Update Header
+        document.getElementById('modal-title').innerText = `${zoneData.depth} ${zoneData.direction} Analysis`;
+
+        // Determine Context: Is 'player' an individual or team aggregate?
+        // Team Aggregates have ID starting with 'team-'
+        const isTeamView = player.id.toString().startsWith('team-');
+
+        if (isTeamView) {
+            document.getElementById('modal-subtitle').innerText = `All ${player.team} WRs`;
+        } else {
+            document.getElementById('modal-subtitle').innerText = `${player.name} (${player.team})`;
+        }
+
+        // Player YPT
+        document.getElementById('modal-player-ypt').innerText = playerYptVal.toFixed(1);
+
+        // Find Team's Best Receiver in this Zone
+        // Filter players on the same team
+        const teamPlayers = allPlayers.filter(p => p.team === player.team);
+        let bestPlayer = null;
+        let bestYpt = -1;
+
+        teamPlayers.forEach(p => {
+            const pZone = p.zones.find(z => z.depth === zoneData.depth && z.direction === zoneData.direction);
+            if (pZone && pZone.targets >= 3) { // Minimum threshold for "Best" consideration? Let's use 3 targets to avoid 1 catch for 50 yards outliers
+                // Note: pZone.ypt is not directly available, need to calculate it
+                const currentPZoneYpt = pZone.targets > 0 ? (pZone.yards / pZone.targets) : 0;
+                if (currentPZoneYpt > bestYpt) {
+                    bestYpt = currentPZoneYpt;
+                    bestPlayer = p;
+                }
+            } else if (pZone && bestPlayer === null) {
+                // Fallback to anyone if no one meets threshold
+                const currentPZoneYpt = pZone.targets > 0 ? (pZone.yards / pZone.targets) : 0;
+                if (currentPZoneYpt > bestYpt) {
+                    bestYpt = currentPZoneYpt;
+                    bestPlayer = p;
+                }
+            }
+        });
+
+        // League Avg & Diff
+        if (leagueAvg) {
+            document.getElementById('modal-league-ypt').innerText = leagueAvg.ypt.toFixed(1);
+
+            // Calculate Difference
+            const diff = playerYptVal - leagueAvg.ypt;
+            const diffStr = (diff > 0 ? '+' : '') + diff.toFixed(1);
+
+            // Color coding
+            let colorClass = '#94a3b8'; // Neutral
+            if (diff >= 2.0) colorClass = '#34d399'; // Green
+            else if (diff <= -2.0) colorClass = '#ef4444'; // Red
+            else if (diff > 0) colorClass = '#eab308'; // Yellow
+
+            document.getElementById('modal-pct').innerHTML = `<span style="color: ${colorClass}">${diffStr}</span>`;
+
+            // Team's Best Display
+            if (bestPlayer) {
+                // Determine Context: Is 'player' an individual or team aggregate?
+                // Team Aggregates have ID starting with 'team-'
+                const isTeamView = player.id.toString().startsWith('team-');
+
+                let compareValue = 0;
+                let compareLabel = "";
+
+                if (isTeamView) {
+                    // Context: Team View -> Compare against League Avg
+                    compareValue = leagueAvg.ypt;
+                    compareLabel = "vs League";
+                } else {
+                    // Context: Player View -> Compare against Team Avg
+                    // Need to calculate Team Avg YPT again
+                    let teamTargets = 0;
+                    let teamYards = 0;
+
+                    teamPlayers.forEach(p => {
+                        const pZone = p.zones.find(z => z.depth === zoneData.depth && z.direction === zoneData.direction);
+                        if (pZone) {
+                            teamTargets += pZone.targets;
+                            teamYards += pZone.yards;
+                        }
+                    });
+                    compareValue = teamTargets > 0 ? (teamYards / teamTargets) : 0;
+                    compareLabel = "vs Team";
+                }
+
+                const bestDiff = bestYpt - compareValue;
+                const bestDiffStr = (bestDiff > 0 ? '+' : '') + bestDiff.toFixed(1);
+
+                // Color for the difference
+                let diffColor = '#94a3b8';
+                if (bestDiff >= 2.0) diffColor = '#34d399';
+                else if (bestDiff <= -2.0) diffColor = '#ef4444';
+                else if (bestDiff > 0) diffColor = '#eab308';
+
+                document.getElementById('modal-team-best').innerHTML = `${bestPlayer.name} <span style="color: ${diffColor}">(${bestDiffStr} ${compareLabel})</span>`;
+            } else {
+                document.getElementById('modal-team-best').innerText = "N/A";
+            }
+
+        } else {
+            document.getElementById('modal-league-ypt').innerText = "N/A";
+            document.getElementById('modal-pct').innerText = "N/A";
+            document.getElementById('modal-team-best').innerText = "N/A";
+        }
+
+        modal.classList.add('show');
     }
 
     function recommendRoutes(zoneStats) {

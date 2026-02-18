@@ -96,11 +96,28 @@ def process_data(pbp, rosters):
     
     return totals, zones
 
-def export_json(totals, zones):
+def calculate_league_averages(zones):
+    """Calculate league average YPT for each zone."""
+    print("Calculating league averages...")
+    
+    # Group by Zone (Depth + Direction)
+    league_zones = zones.groupby(['depth_zone', 'direction_zone']).agg({
+        'is_target': 'sum',
+        'is_reception': 'sum',
+        'yards': 'sum',
+        'is_td': 'sum'
+    }).reset_index()
+    
+    league_zones['catch_rate'] = (league_zones['is_reception'] / league_zones['is_target']).round(3)
+    league_zones['yards_per_target'] = (league_zones['yards'] / league_zones['is_target']).round(1)
+    
+    return league_zones
+
+def export_json(totals, zones, league_zones):
     """Export to JSON structure for web app."""
     print(f"Exporting to {OUTPUT_JSON}...")
     
-    output = []
+    players_output = []
     
     # Iterate through each unique player in totals
     for _, row in totals.iterrows():
@@ -134,15 +151,33 @@ def export_json(totals, zones):
             },
             "zones": zone_data
         }
-        output.append(player_obj)
+        players_output.append(player_obj)
         
     # Sort by total yards descending
-    output.sort(key=lambda x: x['total_stats']['yards'], reverse=True)
+    players_output.sort(key=lambda x: x['total_stats']['yards'], reverse=True)
+    
+    # Format League Averages
+    league_output = {}
+    for _, row in league_zones.iterrows():
+        key = f"{row['depth_zone']}-{row['direction_zone']}"
+        league_output[key] = {
+            "depth": row['depth_zone'],
+            "direction": row['direction_zone'],
+            "ypt": float(row['yards_per_target']),
+            "catch_rate": float(row['catch_rate']),
+            "targets": int(row['is_target']),
+            "yards": int(row['yards'])
+        }
+
+    final_output = {
+        "league_averages": league_output,
+        "players": players_output
+    }
     
     with open(OUTPUT_JSON, 'w') as f:
-        json.dump(output, f, indent=2)
+        json.dump(final_output, f, indent=2)
     
-    print(f"Successfully exported data for {len(output)} players.")
+    print(f"Successfully exported data for {len(players_output)} players and league averages.")
 
 def convert_to_csv():
     """Convert raw parquet files to CSV."""
@@ -171,4 +206,5 @@ if __name__ == "__main__":
     # convert_to_csv() # Uncomment to convert parquet to CSV
     pbp, rosters = load_data()
     totals, zones = process_data(pbp, rosters)
-    export_json(totals, zones)
+    league_zones = calculate_league_averages(zones)
+    export_json(totals, zones, league_zones)
